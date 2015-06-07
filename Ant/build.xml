@@ -1,0 +1,93 @@
+<project xmlns:jacoco="antlib:org.jacoco.ant">
+
+    <property name="src.dir" location="." />
+    <property name="src.java.dir" location="${src.dir}/src" />
+    <property name="src.test.dir" location="${src.dir}/test" />
+
+    <property name="target.dir" location="build" />
+    <property name="target.classes.java.dir" location="${target.dir}/classes" />
+    <property name="target.classes.test.dir" location="${target.dir}/test/classes" />
+
+    <property name="target.report.dir" location="${target.dir}/report" />
+    <property name="result.exec.file" location="${target.dir}/report/jacoco.exec" />
+
+    <taskdef uri="antlib:org.jacoco.ant" resource="org/jacoco/ant/antlib.xml">
+        <classpath path="lib/jacocoant.jar"/>
+    </taskdef>
+
+    <target name="clean">
+        <delete dir="build"/>
+    </target>
+
+    <target name="compile.java">
+        <mkdir dir="${target.classes.java.dir}"/>
+        <javac destdir="${target.classes.java.dir}" debug="on">
+            <src path="${src.java.dir}"/>
+        </javac>
+    </target>
+
+    <target name="compile.test" depends="compile.java">
+        <mkdir dir="${target.classes.test.dir}"/>
+        <javac destdir="${target.classes.test.dir}" debug="on">
+            <src path="${src.test.dir}"/>
+            <classpath>
+                <pathelement location="${target.classes.java.dir}"/>
+                <pathelement path="C:\Program Files (x86)\JetBrains\IntelliJ IDEA Community Edition 14.1.3\lib\junit-4.11.jar" />
+                <pathelement path="C:\Program Files (x86)\JetBrains\IntelliJ IDEA Community Edition 14.1.3\lib\hamcrest-core-1.3.jar" />
+                <pathelement path="C:\Program Files (x86)\JetBrains\IntelliJ IDEA Community Edition 14.1.3\lib\hamcrest-library-1.3.jar" />
+            </classpath>
+        </javac>
+    </target>
+
+
+    <target name="test" depends="compile.test">
+        <mkdir dir="${target.report.dir}" />
+        <jacoco:coverage destfile="${result.exec.file}">
+            <junit fork="true" forkmode="once" haltonerror="yes" haltonfailure="yes">
+                <formatter type="plain" usefile="false" />
+                <formatter type="xml" />
+                <batchtest todir="${target.report.dir}">
+                    <fileset dir="${src.test.dir}">
+                        <include name="**/Test*.java" />
+                        <exclude name="**/Test*All.java" />
+                    </fileset>
+                </batchtest>
+                <classpath>
+                    <pathelement location="${target.classes.java.dir}" />
+                    <pathelement location="${target.classes.test.dir}" />
+                    <pathelement path="C:\Program Files (x86)\JetBrains\IntelliJ IDEA Community Edition 14.1.3\lib\junit-4.11.jar" />
+                    <pathelement path="C:\Program Files (x86)\JetBrains\IntelliJ IDEA Community Edition 14.1.3\lib\hamcrest-core-1.3.jar" />
+                    <pathelement path="C:\Program Files (x86)\JetBrains\IntelliJ IDEA Community Edition 14.1.3\lib\hamcrest-library-1.3.jar" />
+                </classpath>
+            </junit>
+        </jacoco:coverage>
+    </target>
+
+    <target name="report" depends="test">
+        <mkdir dir="${target.report.dir}/html" />
+        <junitreport todir="${target.report.dir}">
+            <fileset dir="${target.report.dir}">
+                <include name="TEST-*.xml" />
+            </fileset>
+            <report todir="${target.report.dir}/html" />
+        </junitreport>
+        <jacoco:report>
+
+            <executiondata>
+                <file file="build\report\jacoco.exec"/>
+            </executiondata>
+
+            <structure name="Example Project">
+                <classfiles>
+                    <fileset dir="build\classes"/>
+                </classfiles>
+                <sourcefiles encoding="UTF-8">
+                    <fileset dir="src"/>
+                </sourcefiles>
+            </structure>
+
+            <html destdir="build\report"/>
+
+        </jacoco:report>
+    </target>
+</project>
